@@ -2,6 +2,9 @@
 
 # mkdir $GOPATH/src/ocp-router-overrider
 
+# client
+https://docs.openshift.org/latest/go_client/getting_started.html#getting-started
+
 # vendoring
 https://github.com/Masterminds/glide
 
