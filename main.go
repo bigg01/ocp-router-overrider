@@ -1,6 +1,9 @@
 package main
 
 import (
+	"errors"
+	"strings"
+
 	buildv1client "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
 	log "github.com/sirupsen/logrus"
 
@@ -10,7 +13,22 @@ import (
 
 	projectv1client "github.com/openshift/client-go/project/clientset/versioned/typed/project/v1"
 	routev1client "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1"
+
+	"regexp"
 )
+
+func findRoute(route string, f string, r string) (v string, err error) {
+
+	//match, _ := regexp.MatchString("p([a-z]+)ch", route.Spec.Host)
+
+	match, _ := regexp.MatchString(f, route)
+	if match {
+		va := strings.Replace(route, f, r, 1)
+		return va, nil
+	}
+	return "", errors.New("Empty")
+
+}
 
 func main() {
 	// Instantiate loader for kubeconfig file.
@@ -84,6 +102,14 @@ func main() {
 			"Host":      route.Spec.Host,
 			"Namespace": route.Namespace,
 		}).Info("Routes")
+
+		//match, _ := regexp.MatchString("p([a-z]+)ch", route.Spec.Host)
+
+		va, err := findRoute(route.Spec.Host, "bit", "big")
+		if err != nil {
+			//panic(err)
+		}
+		log.Info(va)
 
 	}
 
