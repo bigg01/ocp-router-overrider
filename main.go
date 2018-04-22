@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	buildv1client "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
 	log "github.com/sirupsen/logrus"
 
@@ -23,10 +21,12 @@ func main() {
 
 	// Determine the Namespace referenced by the current context in the
 	// kubeconfig file.
-	namespace, _, err := kubeconfig.Namespace()
-	if err != nil {
-		panic(err)
-	}
+	/*
+		namespace, _, err := kubeconfig.Namespace()
+		if err != nil {
+			panic(err)
+		}
+	*/
 
 	// Get a rest.Config from the kubeconfig file.  This will be passed into all
 	// the client objects we create.
@@ -58,10 +58,11 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Projects in namespace %s:\n", namespace)
+	log.Info("--> Projects")
 	for _, project := range projects.Items {
-		fmt.Printf("  %s\n", project.Name)
-		log.Info(project.Name)
+		log.WithFields(log.Fields{
+			"Name": project.Name,
+		}).Info("Projects")
 
 	}
 
@@ -75,32 +76,44 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Routes in namespace %s:\n", namespace)
+	log.Info("--> Routes")
 	for _, route := range routes.Items {
-		fmt.Printf("  %s\n", route.Name)
-		fmt.Println(route.Spec.Host)
+
+		log.WithFields(log.Fields{
+			"Name":      route.Name,
+			"Host":      route.Spec.Host,
+			"Namespace": route.Namespace,
+		}).Info("Routes")
+
 	}
 
 	// List all Pods in our current Namespace.
-	pods, err := coreclient.Pods(namespace).List(metav1.ListOptions{})
+	pods, err := coreclient.Pods("").List(metav1.ListOptions{})
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Pods in namespace %s:\n", namespace)
+	log.Info("--> Pods")
 	for _, pod := range pods.Items {
-		fmt.Printf("  %s\n", pod.Name)
+
+		log.WithFields(log.Fields{
+			"Name":      pod.Name,
+			"Namespace": pod.Namespace,
+		}).Info("Pods")
 
 	}
 
 	// List all Builds in our current Namespace.
-	builds, err := buildclient.Builds(namespace).List(metav1.ListOptions{})
+	builds, err := buildclient.Builds("").List(metav1.ListOptions{})
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Builds in namespace %s:\n", namespace)
+	log.Info("--> Builds")
 	for _, build := range builds.Items {
-		fmt.Printf("  %s\n", build.Name)
+		log.WithFields(log.Fields{
+			"Name":      build.Name,
+			"Namespace": build.Namespace,
+		}).Info("Builds")
 	}
 }
