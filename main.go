@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"os"
 	"strings"
 
 	buildv1client "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
@@ -16,6 +17,27 @@ import (
 
 	"regexp"
 )
+
+func init() {
+	// Log as JSON instead of the default ASCII formatter.
+	//log.SetFormatter(&log.JSONFormatter{})
+
+	ClusterEnvironment := strings.ToLower(os.Getenv("ClusterEnvironment"))
+
+	if ClusterEnvironment == "production" {
+		log.SetFormatter(&log.JSONFormatter{})
+	} else {
+		// The TextFormatter is default, you don't actually have to do this.
+		log.SetFormatter(&log.TextFormatter{})
+	}
+
+	// Output to stdout instead of the default stderr
+	// Can be any io.Writer, see below for File example
+	log.SetOutput(os.Stdout)
+
+	// Only log the warning severity or above.
+	log.SetLevel(log.InfoLevel)
+}
 
 func findRoute(route string, f string, r string) (v string, err error) {
 
@@ -109,7 +131,9 @@ func main() {
 		if err != nil {
 			//panic(err)
 		}
-		log.Info(va)
+		if va != "" {
+			log.Info("--> correcting Route: ", va)
+		}
 
 	}
 
@@ -120,6 +144,12 @@ func main() {
 	}
 
 	log.Info("--> Pods")
+
+	podLogger := log.WithFields(log.Fields{
+		"Get": "pods",
+	})
+
+	podLogger.Info("I'll be logged with common and other field")
 	for _, pod := range pods.Items {
 
 		log.WithFields(log.Fields{
