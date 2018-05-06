@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -123,6 +125,7 @@ func main() {
 			"Name":      route.Name,
 			"Host":      route.Spec.Host,
 			"Namespace": route.Namespace,
+			//"GetSelfLink": route.SelfLink,
 		}).Info("Routes")
 
 		//match, _ := regexp.MatchString("p([a-z]+)ch", route.Spec.Host)
@@ -132,7 +135,37 @@ func main() {
 			//panic(err)
 		}
 		if va != "" {
-			log.Info("--> correcting Route: ", va)
+			log.Warn("--> correcting Route: ", va)
+			route.Spec.Host = va
+
+			log.WithFields(log.Fields{
+				"Name":      route.Name,
+				"Host":      route.Spec.Host,
+				"Namespace": route.Namespace,
+			}).Info("Routes")
+
+			//c.Client.Build().Builds(namespace).Update(build)
+			//routes, err := routeclient.Routes(route.Namespace).Patch(route.Name, api.JSONPatchType, route)
+
+			/*
+			   patchBytes := []byte(`{"spec":{"paused":true,"replicas":0,"revisionHistoryLimit":0}}`)
+			   	return reaper.appsClient.Apps().DeploymentConfigs(namespace).Patch(name, types.StrategicMergePatchType, patchBytes)
+
+			*/
+			log.Warn("..........  patch route !!!!!!!!")
+			patchBytes := []byte(fmt.Sprintf("{\"spec\":{\"host\":\"%s\"}}", route.Spec.Host))
+
+			//fmt.Printf("{\"spec\":{\"host\":\"%v\"}}", route.Spec.Host)
+			//fmt.Print(patchBytes)
+			log.Info(fmt.Sprintf("%s", patchBytes))
+
+			_, err := routeclient.Routes(route.Namespace).Patch(route.Name, types.StrategicMergePatchType, patchBytes)
+			if err != nil {
+				panic(err)
+			} else {
+				log.Info("--> patch successfull :-) !!!")
+			}
+
 		}
 
 	}
