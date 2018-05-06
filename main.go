@@ -105,7 +105,8 @@ func main() {
 
 		routes, err := routeclient.Routes("").List(metav1.ListOptions{})
 		if err != nil {
-			panic(err)
+			//panic(err)
+			log.Error("cannot get Routes")
 		}
 
 		log.Info("--> Routes")
