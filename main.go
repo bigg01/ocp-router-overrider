@@ -15,9 +15,10 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/clientcmd"
 
-	routev1client "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1"
-
 	"regexp"
+
+	projectv1client "github.com/openshift/client-go/project/clientset/versioned/typed/project/v1"
+	routev1client "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1"
 )
 
 func init() {
@@ -56,6 +57,38 @@ func findRoute(route string, f string, r string) (v string, err error) {
 func patchRoute() {
 
 }
+
+/*
+
+func (restc c) findProjects() List {
+
+	projectclient, err := projectv1client.NewForConfig(restc)
+	if err != nil {
+		panic(err)
+	}
+
+	// List all Builds in our current Namespace.
+	for _, zone := range []int{12, 13, 19} {
+
+		netzone := fmt.Sprintf("network-zone=v%v", zone)
+		projects, err := projectclient.Projects().List(metav1.ListOptions{LabelSelector: netzone})
+		if err != nil {
+			panic(err)
+		}
+
+		if len(projects.Items) > 0 {
+			log.Info("--> Found Projects with label :", netzone)
+			for _, project := range projects.Items {
+				log.WithFields(log.Fields{
+					"Name": project.Name,
+				}).Info("Projects")
+
+			}
+		}
+
+	}
+}
+*/
 
 func banner() {
 	log.Info("|==================================================|")
@@ -96,76 +129,92 @@ func main() {
 			panic(err)
 		}
 
+		//findProjects(restconfig)
+
 		routeclient, err := routev1client.NewForConfig(restconfig)
 		if err != nil {
 			panic(err)
 		}
 
 		// check with field selector https://stackoverflow.com/questions/41545123/how-to-get-pods-under-the-service-with-client-go-the-client-library-of-kubernete
+		//https://gitlab.com/kubernetes/kubernetes/blob/245b592facf11236c11a733474edd81deed02043/pkg/controller/cronjob/cronjob_controller.go
 
-		routes, err := routeclient.Routes("").List(metav1.ListOptions{})
+		//selector, _ := metav1.LabelSelectorAsSelector(job.Spec.Selector)
+		//options := metav1.ListOptions{LabelSelector: selector.String()}
+		//podList, err := pc.ListPods(job.Namespace, options)
+
+		projectclient, err := projectv1client.NewForConfig(restconfig)
 		if err != nil {
-			//panic(err)
-			log.Error("cannot get Routes")
+			panic(err)
 		}
 
-		log.Info("--> Routes")
-		for _, route := range routes.Items {
-			/*
-				log.WithFields(log.Fields{
-					"Name":      route.Name,
-					"Host":      route.Spec.Host,
-					"Namespace": route.Namespace,
-					//"GetSelfLink": route.SelfLink,
-				}).Info("Routes")
+		// List all Builds in our current Namespace.
+		var plist []string
+		for _, zone := range []int{12, 13, 19} {
 
-			*/
+			netzone := fmt.Sprintf("network-zone=v%v", zone)
+			projects, err := projectclient.Projects().List(metav1.ListOptions{LabelSelector: netzone})
+			if err != nil {
+				panic(err)
+			}
 
-			//match, _ := regexp.MatchString("p([a-z]+)ch", route.Spec.Host)
+			if len(projects.Items) > 0 {
+				log.Info("--> Found Projects with label :", netzone)
+				for _, project := range projects.Items {
+					log.WithFields(log.Fields{
+						"Name": project.Name,
+					}).Info("Projects")
+					plist = append(plist, project.Name)
 
-			va, err := findRoute(route.Spec.Host, "bit", "big")
+				}
+			}
+
+		}
+
+		log.Info(plist)
+
+		for _, proj := range plist {
+
+			routes, err := routeclient.Routes(proj).List(metav1.ListOptions{})
 			if err != nil {
 				//panic(err)
+				log.Error("cannot get Routes")
 			}
-			if va != "" {
-				log.Warn("--> correcting Route: ", va)
-				route.Spec.Host = va
 
-				log.WithFields(log.Fields{
-					"Name":      route.Name,
-					"Host":      route.Spec.Host,
-					"Namespace": route.Namespace,
-				}).Info("Routes")
-
-				//c.Client.Build().Builds(namespace).Update(build)
-				//routes, err := routeclient.Routes(route.Namespace).Patch(route.Name, api.JSONPatchType, route)
-
-				/*
-				   patchBytes := []byte(`{"spec":{"paused":true,"replicas":0,"revisionHistoryLimit":0}}`)
-				   	return reaper.appsClient.Apps().DeploymentConfigs(namespace).Patch(name, types.StrategicMergePatchType, patchBytes)
-
-				*/
-				log.Warn("..........  patch route !!!!!!!!")
-				patchBytes := []byte(fmt.Sprintf("{\"spec\":{\"host\":\"%s\"}}", route.Spec.Host))
-
-				//fmt.Printf("{\"spec\":{\"host\":\"%v\"}}", route.Spec.Host)
-				//fmt.Print(patchBytes)
-				log.Info(fmt.Sprintf("%s", patchBytes))
-
-				_, err := routeclient.Routes(route.Namespace).Patch(route.Name, types.StrategicMergePatchType, patchBytes)
+			log.Info("--> Routes")
+			for _, route := range routes.Items {
+				va, err := findRoute(route.Spec.Host, "bit", "big")
 				if err != nil {
-					panic(err)
-				} else {
-					log.Info("--> patch successfull :-) !!!")
+					//panic(err)
+				}
+				if va != "" {
+					log.Warn("--> correcting Route: ", va)
+					route.Spec.Host = va
+
+					log.WithFields(log.Fields{
+						"Name":      route.Name,
+						"Host":      route.Spec.Host,
+						"Namespace": route.Namespace,
+					}).Info("Routes")
+					log.Warn("..........  patch route !!!!!!!!")
+					patchBytes := []byte(fmt.Sprintf("{\"spec\":{\"host\":\"%s\"}}", route.Spec.Host))
+					log.Info(fmt.Sprintf("%s", patchBytes))
+
+					_, err := routeclient.Routes(route.Namespace).Patch(route.Name, types.StrategicMergePatchType, patchBytes)
+					if err != nil {
+						panic(err)
+					} else {
+						log.Info("--> patch successfull :-) !!!")
+					}
+
 				}
 
 			}
 
+			log.Info("sleeping 10 Second")
+			time.Sleep(10 * time.Second)
+
 		}
-
-		log.Info("sleeping 10 Second")
-		time.Sleep(10 * time.Second)
-
 	}
 
 }
