@@ -1,4 +1,8 @@
-package: gettingstarted 
+package: gettingstarted
 import:
 - package: github.com/openshift/client-go
   version: release-3.9
+- package: github.com/prometheus/client_golang
+  version: ^0.9.0-pre1
+  subpackages:
+  - prometheus

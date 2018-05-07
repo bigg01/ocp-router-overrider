@@ -1,6 +1,10 @@
-hash: 995bc093bc19c4b4138b063c3ca73db43c66eea5660b2e49aff46983a1196239
-updated: 2018-05-06T16:24:54.933548+02:00
+hash: 267144f00d044fae9eb79928a62a2695794345f6a58d0703101b5b4901051c61
+updated: 2018-05-07T22:30:24.966569+02:00
 imports:
+- name: github.com/beorn7/perks
+  version: 3a771d992973f24aa725d07868b467d1ddfceafb
+  subpackages:
+  - quantile
 - name: github.com/emicklei/go-restful
   version: ff4f55a206334ef123e4f79bbf348980da81ca46
   subpackages:
@@ -22,6 +26,10 @@ imports:
   - sortkeys
 - name: github.com/golang/glog
   version: 44145f04b68cf362d9c4df2182967c2275eaefed
+- name: github.com/golang/protobuf
+  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
+  subpackages:
+  - proto
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/gofuzz
@@ -44,6 +52,10 @@ imports:
   - buffer
   - jlexer
   - jwriter
+- name: github.com/matttproud/golang_protobuf_extensions
+  version: c12348ce28de40eed0136aa2b644d0ee0650e56c
+  subpackages:
+  - pbutil
 - name: github.com/openshift/api
   version: 0d921e363e951d89f583292c60d013c318df64dc
   subpackages:
@@ -61,6 +73,26 @@ imports:
   - route/clientset/versioned/typed/route/v1
 - name: github.com/peterbourgon/diskv
   version: 5f041e8faa004a95c88a202771f4cc3e991971e6
+- name: github.com/prometheus/client_golang
+  version: 967789050ba94deca04a5e84cce8ad472ce313c1
+  subpackages:
+  - prometheus
+- name: github.com/prometheus/client_model
+  version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
+  subpackages:
+  - go
+- name: github.com/prometheus/common
+  version: d811d2e9bf898806ecfb6ef6296774b13ffc314c
+  subpackages:
+  - expfmt
+  - internal/bitbucket.org/ww/goautoneg
+  - model
+- name: github.com/prometheus/procfs
+  version: 8b1c2da0d56deffdbb9e48d4414b4e674bd8083e
+  subpackages:
+  - internal/util
+  - nfs
+  - xfs
 - name: github.com/PuerkitoBio/purell
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
