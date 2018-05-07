@@ -4,6 +4,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+//https://rsmitty.github.io/Prometheus-Exporters/
+
 //Define a struct for you collector that contains pointers
 //to prometheus descriptors for each metric you wish to expose.
 //Note you can also include fields of other types if they provide utility
